@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Category;
+use App\Models\Task;
 use App\Models\User;
 
 use function Pest\Laravel\actingAs;
@@ -116,5 +117,17 @@ describe('destroy', function () {
         deleteJson(route('api.v1.categories.destroy', $category));
 
         assertModelMissing($category);
+    });
+
+    it('returns a 422 response if the category has tasks', function () {
+        $category = Category::factory()
+            ->has(Task::factory())
+            ->create();
+
+        deleteJson(route('api.v1.categories.destroy', $category))
+            ->assertStatus(422)
+            ->assertJson([
+                'message' => 'Category cannot be deleted because it has associated tasks.',
+            ]);
     });
 });

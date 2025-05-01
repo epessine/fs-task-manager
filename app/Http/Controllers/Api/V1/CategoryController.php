@@ -7,6 +7,7 @@ use App\Http\Requests\Api\V1\StoreCategoryRequest;
 use App\Http\Requests\Api\V1\UpdateCategoryRequest;
 use App\Http\Resources\V1\CategoryResource;
 use App\Models\Category;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Http\Response;
 
@@ -43,10 +44,17 @@ class CategoryController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Category $category): Response
+    public function destroy(Category $category): JsonResponse
     {
+        if ($category->tasks()->exists()) {
+            return response()->json(
+                ['message' => 'Category cannot be deleted because it has associated tasks.'],
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+            );
+        }
+
         $category->delete();
 
-        return response()->noContent();
+        return response()->json(status: Response::HTTP_NO_CONTENT);
     }
 }
