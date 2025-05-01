@@ -1,3 +1,6 @@
+# Requirements
+1. Docker
+
 # Run instructions
 
 1. Copy env file
@@ -20,18 +23,20 @@ docker run --rm \
 ./vendor/bin/sail up
 ```
 
-4. Install npm dependencies
+4. Install npm dependencies and run migrations
 ```bash
 ./vendor/bin/sail npm install
-```
-
-5. Run migrations and seeder
-```bash
+./vendor/bin/sail artisan key:generate
 ./vendor/bin/sail artisan migrate --seed
 ```
 
-6. Open http://localhost/ and login as
+5. Open http://localhost/ and login as
 ```
 test1@example.com or test2@example.com
 password
+```
+
+## Running Tests
+```
+./vendor/bin/sail artisan test
 ```
