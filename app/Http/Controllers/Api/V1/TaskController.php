@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\IndexTaskRequest;
 use App\Http\Requests\Api\V1\StoreTaskRequest;
 use App\Http\Requests\Api\V1\UpdateTaskRequest;
 use App\Http\Resources\V1\TaskResource;
@@ -20,16 +21,22 @@ class TaskController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): ResourceCollection
+    public function index(IndexTaskRequest $request): ResourceCollection
     {
         $tasks = Task::query()
             ->with(['category', 'user'])
-            ->tap(fn (Builder $query) => match (request('filter')) {
+            ->tap(fn (Builder $query) => match ($request->input('status')) {
                 'Completed' => $query->whereNotNull('completed_at'),
                 'Pending' => $query->whereNull('completed_at'),
                 default => $query,
             })
-            ->latest()
+            ->when($request->input('category_id'), fn (Builder $query, $categoryId) => $query->where('category_id', $categoryId))
+            ->when($request->input('user_id'), fn (Builder $query, $userId) => $query->where('user_id', $userId))
+            ->when(
+                $request->input('sort_by'),
+                fn (Builder $query, $sortBy) => $query->orderBy($sortBy, $request->input('sort', 'asc')),
+                fn (Builder $query) => $query->orderBy('updated_at', $request->input('sort', 'asc')),
+            )
             ->paginate(request('per_page', 10), page: request('page', 1));
 
         return TaskResource::collection($tasks);

@@ -47,17 +47,61 @@ describe('index', function (): void {
         Task::factory(5)->for(auth()->user())->create(['completed_at' => now()]);
         Task::factory(5)->for(auth()->user())->create(['completed_at' => null]);
 
-        getJson(route('api.v1.tasks.index', ['filter' => 'Completed']))
+        getJson(route('api.v1.tasks.index', ['status' => 'Completed']))
             ->assertOk()
             ->assertJsonCount(5, 'data');
 
-        getJson(route('api.v1.tasks.index', ['filter' => 'Pending']))
+        getJson(route('api.v1.tasks.index', ['status' => 'Pending']))
             ->assertOk()
             ->assertJsonCount(5, 'data');
 
         getJson(route('api.v1.tasks.index'))
             ->assertOk()
             ->assertJsonCount(10, 'data');
+    });
+
+    it('can get tasks with category filter', function (): void {
+        $category = Category::factory()->create();
+        Task::factory(5)->for(auth()->user())->create(['category_id' => $category->id]);
+        Task::factory(5)->for(auth()->user())->create(['category_id' => null]);
+
+        getJson(route('api.v1.tasks.index', ['category_id' => $category->id]))
+            ->assertOk()
+            ->assertJsonCount(5, 'data');
+    });
+
+    it('can get tasks with user filter', function (): void {
+        $user = User::factory()->create();
+        Task::factory(5)->for($user)->create();
+        Task::factory(5)->for(auth()->user())->create();
+
+        getJson(route('api.v1.tasks.index', ['user_id' => $user->id]))
+            ->assertOk()
+            ->assertJsonCount(5, 'data');
+    });
+
+    it('can get tasks with pagination', function (): void {
+        Task::factory(15)->for(auth()->user())->create();
+
+        getJson(route('api.v1.tasks.index', ['per_page' => 5]))
+            ->assertOk()
+            ->assertJsonCount(5, 'data')
+            ->assertJsonPath('meta.total', 15);
+    });
+
+    it('can get tasks with sorting', function (): void {
+        Task::factory(5)->for(auth()->user())->create(['title' => 'A']);
+        Task::factory(5)->for(auth()->user())->create(['title' => 'B']);
+
+        getJson(route('api.v1.tasks.index', ['sort_by' => 'title', 'sort' => 'asc']))
+            ->assertOk()
+            ->assertJsonPath('data.0.title', 'A')
+            ->assertJsonPath('data.9.title', 'B');
+
+        getJson(route('api.v1.tasks.index', ['sort_by' => 'title', 'sort' => 'desc']))
+            ->assertOk()
+            ->assertJsonPath('data.0.title', 'B')
+            ->assertJsonPath('data.9.title', 'A');
     });
 });
 
