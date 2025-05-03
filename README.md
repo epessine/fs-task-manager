@@ -36,6 +36,14 @@ test1@example.com or test2@example.com
 password
 ```
 
+## Real Time Updates
+
+To activate real-time updates on the app, run
+```bash
+./vendor/bin/sail artisan postgres:listen
+```
+This will start up the Reverb server, the queue worker and the listener service for Postgres events.
+
 ## Running Tests
 ```
 ./vendor/bin/sail artisan test
