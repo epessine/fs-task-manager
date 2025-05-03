@@ -34,6 +34,8 @@ const resetAllFilters = () => {
 onMounted(async () => {
     fetchData();
     categoriesApi.fetchData();
+    window.Echo.channel('updates')
+        .listen('.data.updated', () => fetchData());
 });
 watch(currentUserOnly, (v) => filters.setUserId(v ? page.props.auth.user.id : null));
 watch(selectedCategory, (v) => filters.setCategoryId(v ? v : null));
