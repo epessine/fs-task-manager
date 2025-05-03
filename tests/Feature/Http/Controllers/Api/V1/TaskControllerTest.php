@@ -42,6 +42,23 @@ describe('index', function (): void {
             ])
             ->assertJsonCount(5, 'data');
     });
+
+    it('can get tasks with filter', function (): void {
+        Task::factory(5)->for(auth()->user())->create(['completed_at' => now()]);
+        Task::factory(5)->for(auth()->user())->create(['completed_at' => null]);
+
+        getJson(route('api.v1.tasks.index', ['filter' => 'Completed']))
+            ->assertOk()
+            ->assertJsonCount(5, 'data');
+
+        getJson(route('api.v1.tasks.index', ['filter' => 'Pending']))
+            ->assertOk()
+            ->assertJsonCount(5, 'data');
+
+        getJson(route('api.v1.tasks.index'))
+            ->assertOk()
+            ->assertJsonCount(10, 'data');
+    });
 });
 
 describe('store', function (): void {

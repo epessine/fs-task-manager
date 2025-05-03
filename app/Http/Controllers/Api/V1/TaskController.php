@@ -7,6 +7,7 @@ use App\Http\Requests\Api\V1\StoreTaskRequest;
 use App\Http\Requests\Api\V1\UpdateTaskRequest;
 use App\Http\Resources\V1\TaskResource;
 use App\Models\Task;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -21,7 +22,15 @@ class TaskController extends Controller
      */
     public function index(): ResourceCollection
     {
-        $tasks = Task::query()->with(['category'])->latest()->paginate();
+        $tasks = Task::query()
+            ->with(['category', 'user'])
+            ->tap(fn (Builder $query) => match (request('filter')) {
+                'Completed' => $query->whereNotNull('completed_at'),
+                'Pending' => $query->whereNull('completed_at'),
+                default => $query,
+            })
+            ->latest()
+            ->paginate(request('per_page', 10), page: request('page', 1));
 
         return TaskResource::collection($tasks);
     }
