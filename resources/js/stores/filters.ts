@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 export enum Status {
     All = 'All',
@@ -44,12 +44,23 @@ export const useFiltersStore = defineStore('filters', () => {
         sortBy.value = newSortBy;
     };
 
+    const isDefaults = computed(() => {
+        return (
+            status.value === Status.All &&
+            categoryId.value === null &&
+            userId.value === null &&
+            sortAsc.value === false &&
+            sortBy.value === SortBy.UpdatedAt
+        );
+    });
+
     return {
         status,
         categoryId,
         userId,
         sortAsc,
         sortBy,
+        isDefaults,
         resetFilters,
         setStatus,
         setCategoryId,

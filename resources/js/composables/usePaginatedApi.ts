@@ -46,6 +46,11 @@ export function usePaginatedApi(url: string) {
         }
     };
 
+    filters.$subscribe(() => {
+        currentPage.value = 1;
+        fetchData();
+    });
+
     return {
         data,
         loading,
