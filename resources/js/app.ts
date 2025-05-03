@@ -7,6 +7,7 @@ import { createPinia } from 'pinia';
 import { createApp, h } from 'vue';
 import { ZiggyVue } from 'ziggy-js';
 import { initializeTheme } from './composables/useAppearance';
+import './echo';
 
 // Extend ImportMeta interface for Vite...
 declare module 'vite/client' {
