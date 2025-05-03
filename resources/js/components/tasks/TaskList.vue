@@ -3,8 +3,10 @@ import PlaceholderPattern from '../PlaceholderPattern.vue';
 import { onMounted } from 'vue';
 import TaskComponent from './Task.vue';
 import { Button } from '@/components/ui/button';
-import { Filter, usePaginatedApi } from '@/composables/usePaginatedApi';
+import { usePaginatedApi } from '@/composables/usePaginatedApi';
+import { Status, useFiltersStore } from '@/stores/filters';
 
+const filters = useFiltersStore();
 const {
     data,
     loading,
@@ -12,15 +14,12 @@ const {
     currentPage,
     lastPage,
     total,
-    filter,
     changePage,
-    changeFilter,
     fetchData
 } = usePaginatedApi(route('api.v1.tasks.index'));
 
 onMounted(fetchData);
-
-const filters = [Filter.All, Filter.Completed, Filter.Pending];
+filters.$subscribe(() => fetchData());
 </script>
 
 
@@ -28,12 +27,12 @@ const filters = [Filter.All, Filter.Completed, Filter.Pending];
     <div class="flex items-center justify-between">
         <div class="inline-flex gap-1 rounded-lg bg-neutral-100 p-1 dark:bg-neutral-800">
             <button
-                v-for="value in filters"
+                v-for="value in [Status.All, Status.Completed, Status.Pending]"
                 :key="value"
-                @click="changeFilter(value)"
+                @click="filters.setStatus(value)"
                 :class="[
                     'flex items-center rounded-md px-3.5 py-1.5 transition-colors',
-                    filter === value
+                    filters.status === value
                         ? 'bg-white shadow-xs dark:bg-neutral-700 dark:text-neutral-100'
                         : 'text-neutral-500 hover:bg-neutral-200/60 hover:text-black dark:text-neutral-400 dark:hover:bg-neutral-700/60',
                 ]"

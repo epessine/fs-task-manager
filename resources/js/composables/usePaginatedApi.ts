@@ -1,21 +1,15 @@
+import { useFiltersStore } from '@/stores/filters';
 import axios from 'axios';
 import { ref } from 'vue';
 
-export enum Filter {
-    All = 'All',
-    Completed = 'Completed',
-    Pending = 'Pending',
-}
-
 export function usePaginatedApi(url: string) {
+    const filters = useFiltersStore();
     const data = ref([]);
     const loading = ref(false);
     const error = ref(null);
     const currentPage = ref(1);
     const lastPage = ref(1);
     const total = ref(0);
-    const filter = ref(Filter.All);
-    const perPage = ref(12);
 
     const fetchData = async () => {
         loading.value = true;
@@ -25,8 +19,12 @@ export function usePaginatedApi(url: string) {
             const response = await axios.get(url, {
                 params: {
                     page: currentPage.value,
-                    filter: filter.value,
-                    per_page: perPage.value,
+                    status: filters.status,
+                    category_id: filters.categoryId,
+                    user_id: filters.userId,
+                    sort_by: filters.sortBy,
+                    sort_asc: filters.sortAsc,
+                    per_page: 12,
                 },
             });
 
@@ -41,17 +39,11 @@ export function usePaginatedApi(url: string) {
         }
     };
 
-    const changePage = (page : number) => {
+    const changePage = (page: number) => {
         if (page >= 1 && page <= lastPage.value) {
             currentPage.value = page;
             fetchData();
         }
-    };
-
-    const changeFilter = (newFilter: Filter) => {
-        filter.value = newFilter;
-        currentPage.value = 1;
-        fetchData();
     };
 
     return {
@@ -61,10 +53,7 @@ export function usePaginatedApi(url: string) {
         currentPage,
         lastPage,
         total,
-        filter,
-        perPage,
         fetchData,
         changePage,
-        changeFilter,
     };
 }
