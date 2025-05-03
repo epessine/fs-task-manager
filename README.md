@@ -48,3 +48,6 @@ This will start up the Reverb server, the queue worker and the listener service 
 ```
 ./vendor/bin/sail artisan test
 ```
+
+## API Docs
+You can open `http://localhost/docs/api` to view the API documentation.
